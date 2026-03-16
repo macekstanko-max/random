@@ -16,4 +16,8 @@ body {background:linear-gradient(180deg, #eef3ff 0%, #f7f9ff 100%); padding:1rem
 a{color:#1d4ed8; text-decoration:none;}
 a:hover{text-decoration:underline;}
 .footer{margin-top:1rem; padding:.65rem 0; font-size:.84rem; color:#475569; text-align:center;}
+.project{border:1px solid #dbeafe; background:#f8fafc; border-radius:8px; padding:.6rem; margin-bottom:.4rem;}
+.project h4{margin:.2rem 0;}
+.project p{margin:.2rem 0; color:#334155;}
+.grid{display:grid; grid-template-columns:1fr; gap:.8rem; margin-top:.8rem;}
 @media (min-width: 760px){.grid{grid-template-columns:repeat(3,1fr);} }
