@@ -27,4 +27,9 @@ a:hover{text-decoration:underline;}
 .project h4{margin:.2rem 0;}
 .project p{margin:.2rem 0; color:#334155;}
 .grid{display:grid; grid-template-columns:1fr; gap:.8rem; margin-top:.8rem;}
+ .small-btn{font-size:.8rem;padding:.2rem .45rem;border:1px solid #cbd5e1;border-radius:5px;background:#f1f5f9;color:#111827;text-decoration:none;cursor:pointer;}
+.small-btn:hover{background:#e2e8f0;}
+.edit-form{margin-top:.4rem;display:flex;gap:.4rem;align-items:center;}
+.edit-form input{flex:1;padding:.35rem .45rem;border:1px solid #cbd5e1;border-radius:6px;}
+.edit-form button{padding:.35rem .55rem;border-radius:6px;border:none;background:#2563eb;color:white;cursor:pointer;}
 @media (min-width: 760px){.grid{grid-template-columns:repeat(3,1fr);} }
