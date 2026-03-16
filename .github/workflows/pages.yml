@@ -9,17 +9,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pages: write
       id-token: write
 
     steps:
       - uses: actions/checkout@v4
-      - name: Configure Pages
-        uses: actions/configure-pages@v4
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: .
-      - name: Deploy
-        uses: actions/deploy-pages@v1
+          publish_dir: ./
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
