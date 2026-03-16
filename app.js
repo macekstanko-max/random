@@ -32,16 +32,20 @@ fetch('profile.json')
     });
 
     projectsEl.innerHTML = '';
-    data.projects.forEach((project) => {
-      const box = document.createElement('article');
-      box.className = 'project';
-      box.innerHTML = `
-        <h4>${project.title}</h4>
-        <p>${project.description}</p>
-        <a href="${project.link}" target="_blank">Odkaz</a>
-      `;
-      projectsEl.appendChild(box);
-    });
+    if (Array.isArray(data.projects) && data.projects.length > 0) {
+      data.projects.forEach((project) => {
+        const box = document.createElement('article');
+        box.className = 'project';
+        box.innerHTML = `
+          <h4>${project.title}</h4>
+          <p>${project.description}</p>
+          <a href="${project.link}" target="_blank">Odkaz</a>
+        `;
+        projectsEl.appendChild(box);
+      });
+    } else {
+      projectsEl.innerHTML = '<p>Žádné projekty k zobrazení.</p>';
+    }
 
     githubLink.textContent = data.github;
     githubLink.href = data.github;
