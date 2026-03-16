@@ -1,16 +1,47 @@
 <?php
+$message = '';
+$messageType = '';
+
 $raw = file_get_contents(__DIR__ . '/profile.json');
 $data = json_decode($raw, true);
 if ($data === null) {
     $data = [];
 }
-$name = isset($data['name']) ? htmlspecialchars($data['name']) : 'Neznámý';
-$description = isset($data['description']) ? htmlspecialchars($data['description']) : 'IT student.';
+
 $skills = isset($data['skills']) && is_array($data['skills']) ? $data['skills'] : [];
 $interests = isset($data['interests']) && is_array($data['interests']) ? $data['interests'] : [];
 $projects = isset($data['projects']) && is_array($data['projects']) ? $data['projects'] : [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_interest'])) {
+    $newInterest = trim($_POST['new_interest']);
+    if ($newInterest === '') {
+        $message = 'Pole nesmí být prázdné.';
+        $messageType = 'error';
+    } else {
+        $normalized = strtolower($newInterest);
+        $loweredInterests = array_map('strtolower', $interests);
+        if (in_array($normalized, $loweredInterests, true)) {
+            $message = 'Tento zájem už existuje.';
+            $messageType = 'error';
+        } else {
+            $interests[] = $newInterest;
+            $data['interests'] = $interests;
+            $saved = file_put_contents(__DIR__ . '/profile.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            if ($saved !== false) {
+                $message = 'Zájem byl úspěšně přidán.';
+                $messageType = 'success';
+            } else {
+                $message = 'Chyba při ukládání do profile.json.';
+                $messageType = 'error';
+            }
+        }
+    }
+}
+
+$name = isset($data['name']) ? htmlspecialchars($data['name']) : 'Neznámý';
+$description = isset($data['description']) ? htmlspecialchars($data['description']) : 'IT student.';
 $github = isset($data['github']) ? htmlspecialchars($data['github']) : '#';
-$email = isset($data['email']) ? htmlspecialchars($data['email']) : 'mailto:example@example.com';
+$email = isset($data['email']) ? htmlspecialchars($data['email']) : 'example@example.com';
 ?>
 <!doctype html>
 <html lang="cs">
@@ -47,6 +78,9 @@ $email = isset($data['email']) ? htmlspecialchars($data['email']) : 'mailto:exam
 
     <section class="card">
       <h3>Zájmy</h3>
+      <?php if (!empty($message)): ?>
+        <p class="<?php echo $messageType; ?>"><?php echo htmlspecialchars($message); ?></p>
+      <?php endif; ?>
       <?php if (count($interests) > 0): ?>
         <ul>
           <?php foreach ($interests as $interest): ?>
@@ -56,6 +90,13 @@ $email = isset($data['email']) ? htmlspecialchars($data['email']) : 'mailto:exam
       <?php else: ?>
         <p>Žádné zájmy k zobrazení.</p>
       <?php endif; ?>
+      <form method="POST" class="interest-form">
+        <label for="new_interest">Přidat nový zájem:</label>
+        <div class="form-row">
+          <input type="text" name="new_interest" id="new_interest" required>
+          <button type="submit">Přidat zájem</button>
+        </div>
+      </form>
     </section>
 
     <section class="card">
