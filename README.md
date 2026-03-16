@@ -24,8 +24,18 @@ Po úspěšném nasazení jsou stránky dostupné na:
 
 `https://macekstanko-max.github.io/random`
 
-## Dynamický profil
+## PHP verze
 
-Tento web načítá obsah (jméno, skills, interests, projekty) dynamicky ze souboru `profile.json` přes `app.js`.
+Tento web nyní podporuje PHP server-side verzi pomocí `index.php`, které načítá data z `profile.json` a vykresluje HTML bez JavaScriptu.
 
-> Pokud je momentálně 404, aktivujte GitHub Pages ve Settings → Pages a vyberte `gh-pages` branch / `/`.
+### Spuštění v Codespaces nebo lokálně
+
+```bash
+cd random
+php -S 0.0.0.0:8000
+```
+
+Otevři `http://localhost:8000`.
+
+> Pokud používáš GitHub Pages, musíš mít statickou stránku. Tuto PHP verzi na GitHub Pages nenasazujeme.
+
