@@ -1,20 +1,32 @@
 {
-  "name": "Jan Novák",
-  "description": "IT student se zájmem o software, web a automatizaci.",
-  "skills": ["HTML", "CSS", "JavaScript", "Git", "Python", "Node.js"],
-  "interests": ["Web development", "AI nástroje", "Herní vývoj"],
-  "projects": [
-    {
-      "title": "Osobní webový profil",
-      "description": "Dynamický profil načítaný z profile.json pomocí fetch().",
-      "link": "https://github.com/macekstanko-max/random"
-    },
-    {
-      "title": "Mini chat aplikace",
-      "description": "Projekt s front-endem a jednoduchým backendem.",
-      "link": "https://github.com/macekstanko-max/muj-chat"
-    }
-  ],
-  "github": "https://github.com/macekstanko-max",
-  "email": "macek@example.com"
+    "name": "Jan Novák",
+    "description": "IT student se zájmem o software, web a automatizaci.",
+    "skills": [
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "Git",
+        "Python",
+        "Node.js"
+    ],
+    "interests": [
+        "Web development",
+        "AI nástroje",
+        "Herní vývoj",
+        "TestInterest"
+    ],
+    "projects": [
+        {
+            "title": "Osobní webový profil",
+            "description": "Dynamický profil načítaný z profile.json pomocí fetch().",
+            "link": "https:\/\/github.com\/macekstanko-max\/random"
+        },
+        {
+            "title": "Mini chat aplikace",
+            "description": "Projekt s front-endem a jednoduchým backendem.",
+            "link": "https:\/\/github.com\/macekstanko-max\/muj-chat"
+        }
+    ],
+    "github": "https:\/\/github.com\/macekstanko-max",
+    "email": "macek@example.com"
 }
