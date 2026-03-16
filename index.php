@@ -1,47 +1,105 @@
 <?php
-$message = '';
-$messageType = '';
+session_start();
 
-$raw = file_get_contents(__DIR__ . '/profile.json');
-$data = json_decode($raw, true);
-if ($data === null) {
-    $data = [];
+function loadData() {
+    $raw = file_get_contents(__DIR__ . '/profile.json');
+    $data = json_decode($raw, true);
+    if (!is_array($data)) {
+        $data = [];
+    }
+    if (!isset($data['interests']) || !is_array($data['interests'])) {
+        $data['interests'] = [];
+    }
+    return $data;
 }
 
-$skills = isset($data['skills']) && is_array($data['skills']) ? $data['skills'] : [];
-$interests = isset($data['interests']) && is_array($data['interests']) ? $data['interests'] : [];
-$projects = isset($data['projects']) && is_array($data['projects']) ? $data['projects'] : [];
+function saveData($data) {
+    file_put_contents(__DIR__ . '/profile.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_interest'])) {
-    $newInterest = trim($_POST['new_interest']);
-    if ($newInterest === '') {
-        $message = 'Pole nesmí být prázdné.';
-        $messageType = 'error';
-    } else {
-        $normalized = strtolower($newInterest);
-        $loweredInterests = array_map('strtolower', $interests);
-        if (in_array($normalized, $loweredInterests, true)) {
-            $message = 'Tento zájem už existuje.';
-            $messageType = 'error';
+$data = loadData();
+$message = $_SESSION['message'] ?? '';
+$messageType = $_SESSION['messageType'] ?? '';
+unset($_SESSION['message'], $_SESSION['messageType']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    $interests = $data['interests'];
+    $lowered = array_map('strtolower', $interests);
+
+    if ($action === 'add') {
+        $newInterest = trim($_POST['new_interest'] ?? '');
+        if ($newInterest === '') {
+            $_SESSION['message'] = 'Pole nesmí být prázdné.';
+            $_SESSION['messageType'] = 'error';
+        } elseif (in_array(strtolower($newInterest), $lowered, true)) {
+            $_SESSION['message'] = 'Tento zájem už existuje.';
+            $_SESSION['messageType'] = 'error';
         } else {
-            $interests[] = $newInterest;
-            $data['interests'] = $interests;
-            $saved = file_put_contents(__DIR__ . '/profile.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            if ($saved !== false) {
-                $message = 'Zájem byl úspěšně přidán.';
-                $messageType = 'success';
+            $data['interests'][] = $newInterest;
+            saveData($data);
+            $_SESSION['message'] = 'Zájem byl úspěšně přidán.';
+            $_SESSION['messageType'] = 'success';
+        }
+    } elseif ($action === 'delete') {
+        if (isset($_POST['index'])) {
+            $index = (int) $_POST['index'];
+            if (isset($data['interests'][$index])) {
+                unset($data['interests'][$index]);
+                $data['interests'] = array_values($data['interests']);
+                saveData($data);
+                $_SESSION['message'] = 'Zájem byl odstraněn.';
+                $_SESSION['messageType'] = 'success';
             } else {
-                $message = 'Chyba při ukládání do profile.json.';
-                $messageType = 'error';
+                $_SESSION['message'] = 'Zájem nebyl nalezen.';
+                $_SESSION['messageType'] = 'error';
+            }
+        }
+    } elseif ($action === 'edit') {
+        $index = isset($_POST['index']) ? (int) $_POST['index'] : null;
+        $edited = trim($_POST['edited_interest'] ?? '');
+        if ($edited === '') {
+            $_SESSION['message'] = 'Pole nesmí být prázdné.';
+            $_SESSION['messageType'] = 'error';
+        } elseif ($index === null || !isset($data['interests'][$index])) {
+            $_SESSION['message'] = 'Zájem nebyl nalezen.';
+            $_SESSION['messageType'] = 'error';
+        } else {
+            $loweredEdited = strtolower($edited);
+            $duplicate = false;
+            foreach ($data['interests'] as $i => $item) {
+                if ($i === $index) {
+                    continue;
+                }
+                if (strtolower($item) === $loweredEdited) {
+                    $duplicate = true;
+                    break;
+                }
+            }
+            if ($duplicate) {
+                $_SESSION['message'] = 'Tento zájem už existuje.';
+                $_SESSION['messageType'] = 'error';
+            } else {
+                $data['interests'][$index] = $edited;
+                $data['interests'] = array_values($data['interests']);
+                saveData($data);
+                $_SESSION['message'] = 'Zájem byl upraven.';
+                $_SESSION['messageType'] = 'success';
             }
         }
     }
+    header('Location: index.php');
+    exit;
 }
 
-$name = isset($data['name']) ? htmlspecialchars($data['name']) : 'Neznámý';
-$description = isset($data['description']) ? htmlspecialchars($data['description']) : 'IT student.';
-$github = isset($data['github']) ? htmlspecialchars($data['github']) : '#';
-$email = isset($data['email']) ? htmlspecialchars($data['email']) : 'example@example.com';
+$name = htmlspecialchars($data['name'] ?? 'Neznámý');
+$description = htmlspecialchars($data['description'] ?? 'IT student.');
+$skills = is_array($data['skills'] ?? null) ? $data['skills'] : [];
+$interests = is_array($data['interests'] ?? null) ? $data['interests'] : [];
+$projects = is_array($data['projects'] ?? null) ? $data['projects'] : [];
+$github = htmlspecialchars($data['github'] ?? '#');
+$email = htmlspecialchars($data['email'] ?? 'example@example.com');
+$editIndex = isset($_GET['edit']) ? (int) $_GET['edit'] : null;
 ?>
 <!doctype html>
 <html lang="cs">
@@ -79,21 +137,41 @@ $email = isset($data['email']) ? htmlspecialchars($data['email']) : 'example@exa
     <section class="card">
       <h3>Zájmy</h3>
       <?php if (!empty($message)): ?>
-        <p class="<?php echo $messageType; ?>"><?php echo htmlspecialchars($message); ?></p>
+        <p class="<?php echo htmlspecialchars($messageType); ?>"><?php echo htmlspecialchars($message); ?></p>
       <?php endif; ?>
       <?php if (count($interests) > 0): ?>
         <ul>
-          <?php foreach ($interests as $interest): ?>
-            <li><?php echo htmlspecialchars($interest); ?></li>
+          <?php foreach ($interests as $i => $interest): ?>
+            <li>
+              <?php echo htmlspecialchars($interest); ?>
+              <form method="POST" style="display:inline; margin-left:.4rem;">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="index" value="<?php echo $i; ?>">
+                <button type="submit" class="small-btn">Smazat</button>
+              </form>
+              <a href="index.php?edit=<?php echo $i; ?>" class="small-btn">Upravit</a>
+            </li>
+            <?php if ($editIndex === $i): ?>
+              <li>
+                <form method="POST" class="edit-form">
+                  <input type="hidden" name="action" value="edit">
+                  <input type="hidden" name="index" value="<?php echo $i; ?>">
+                  <input type="text" name="edited_interest" value="<?php echo htmlspecialchars($interest); ?>" required>
+                  <button type="submit" class="small-btn">Uložit</button>
+                  <a href="index.php" class="small-btn">Zrušit</a>
+                </form>
+              </li>
+            <?php endif; ?>
           <?php endforeach; ?>
         </ul>
       <?php else: ?>
         <p>Žádné zájmy k zobrazení.</p>
       <?php endif; ?>
+
       <form method="POST" class="interest-form">
-        <label for="new_interest">Přidat nový zájem:</label>
+        <input type="hidden" name="action" value="add">
         <div class="form-row">
-          <input type="text" name="new_interest" id="new_interest" required>
+          <input type="text" name="new_interest" required placeholder="Nový zájem">
           <button type="submit">Přidat zájem</button>
         </div>
       </form>
